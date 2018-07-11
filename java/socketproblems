@@ -1,0 +1,51 @@
+weblogic 服务器这两天老是不稳定，弄得我头都大了，解决不了，最后只能请求老大帮忙了。
+
+先说说问题：执行操作的时候长时间没有反应，一般等久了，以为死机了或者怎样，又会重点执行操作，如此更加大了服务器的负担。
+
+weblogic服务器的健康状况 由原来的:‘良好’  变成 ‘ 警告’，这个时候我操作一下应用，服务器的状态就变成 FAILED，意味着服务器崩溃了。
+
+报的异常有以下几个：
+
+1.这个异常是说很多线程无响应，超时，被终止都是数据库请求，大部分是读取无响应或者是获取数据库连接
+
+解决：加大数据库连接的数量，之前我只设置成5，显然远远不够。
+
+Thread-210 "[STUCK] ExecuteThread: '60' for queue: 'weblogic.kernel.Default (self-tuning)'" <alive, suspended, waiting, priority=1, DAEMON> {
+    -- Waiting for notification on: com.mchange.v2.resourcepool.BasicResourcePool@1bca3e53[fat lock]
+    java.lang.Object.wait(Object.java:???)
+    com.mchange.v2.resourcepool.BasicResourcePool.awaitAcquire(BasicResourcePool.java:931)
+    com.mchange.v2.resourcepool.BasicResourcePool.checkoutResource(BasicResourcePool.java:201)
+    com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool.checkoutPooledConnection(C3P0PooledConnectionPool.java:260)
+
+
+
+2.这个异常是由于客户端向服务器发送的请求执行超时
+
+解决：请求超时的解决方法 就是把服务器的等待时间加长
+
+]", which is more than the configured time (StuckThreadMaxTime) of "600" seconds. Stack trace:
+Thread-222 "[STUCK] ExecuteThread: '72' for queue: 'weblogic.kernel.Default (self-tuning)'" <alive, in native, suspended, priority=1, DAEMON> {
+    jrockit.net.SocketNativeIO.readBytesPinned(SocketNativeIO.java:???)
+    jrockit.net.SocketNativeIO.socketRead(SocketNativeIO.java:24)
+    java.net.SocketInputStream.socketRead0(SocketInputStream.java:???)
+    java.net.SocketInputStream.read(SocketInputStream.java:107)
+    oracle.net.ns.Packet.receive(Packet.java:241)
+    oracle.net.ns.DataPacket.receive(DataPacket.java:104)
+
+
+
+3.这个异常是服务器把socket数据返回的地址重置了，我这里也是因为超时了，所以才导致这个问题的。（每个服务器、应用不一样，大家的问题不一定跟我一样，我这也只是一种可能性。）
+
+解决：请求超时的解决方法 就是把服务器的等待时间加长
+
+java.net.SocketException: Connection reset
+at java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:96)
+at java.net.SocketOutputStream.write(SocketOutputStream.java:136)
+at weblogic.servlet.internal.ChunkOutput.writeChunkTransfer(ChunkOutput.java:568)
+at weblogic.servlet.internal.ChunkOutput.writeChunks(ChunkOutput.java:539)
+at weblogic.servlet.internal.ChunkOutput.flush(ChunkOutput.java:427)
+at weblogic.servlet.internal.CharsetChunkOutput.flush(CharsetChunkOutput.java:298)
+at weblogic.servlet.internal.ChunkOutput$2.checkForFlush(ChunkOutput.java:648)
+at weblogic.servlet.internal.CharsetChunkOutput.write(CharsetChunkOutput.java:200)
+at weblogic.servlet.internal.ChunkOutputWrapper.write(ChunkOutputWrapper.java:148)
+at weblogic.servlet.internal.ServletOutputStreamImpl.write(ServletOutputStreamImpl.java:148)
