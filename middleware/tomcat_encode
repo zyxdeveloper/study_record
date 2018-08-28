@@ -1,0 +1,55 @@
+从tomcat移植到weblogic最常见的问题就是中文的乱码
+
+在tomcat下曾经出现过乱码的问题，解决方法如下：
+
+1、所有文件的编码格式统一设成UTF-8
+
+2、tomcat的server.xml文件中有个connector，增加一个属性  URIEncoding="utf-8"
+
+3、jsp之间传递参数时，如果包含中文字符，需要用encodeURI(URIString)转换一下
+
+这样基本不会出现乱码的问题。
+
+而当系统移植到weblogic的时候，乱码的问题再一次出现
+
+和乱码纠结了一天之后终于找到了在两个服务下都不会乱码的方法，那就是 过滤器filter
+
+1、web.xml
+
+ <filter>
+  <filter-name>PageFilter</filter-name>
+  <filter-class>com.xxxx.PageFilter</filter-class>
+  <init-param>
+   <param-name>encoding</param-name>
+   <param-value>UTF-8</param-value>
+  </init-param>
+ </filter>
+
+2、过滤器类
+
+import java.io.IOException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
+public class PageFilter implements Filter {
+ 
+ static String encoding = "";
+ 
+ public void init(FilterConfig filterConfig) {
+        encoding = filterConfig.getInitParameter("encoding");
+ }
+
+ public void doFilter(ServletRequest request, ServletResponse response,
+   FilterChain filterChain) throws IOException, ServletException {
+  request.setCharacterEncoding(encoding);
+  filterChain.doFilter(request, response);
+ }
+
+ public void destroy() {
+ }
+}
