@@ -1,0 +1,73 @@
+package com.doublexman.utils.redis;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Pipeline;
+
+import java.util.List;
+
+public class RedisManager {
+
+    private JedisPool jedisPool;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public RedisManager(JedisPoolConfig jedisPoolConfig, String host, int port, int timeout, String password ) {
+        this.jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password);
+    }
+
+    public String getValue(String key) {
+        String result = null;
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            result = jedis.get(key);
+        } catch (Exception e) {
+            logger.error("Redis get value error", e);
+        } finally {
+            if (null != jedis) {
+                jedis.close();
+            }
+        }
+        return result;
+    }
+
+    public void setValue(String key, String value) {
+        Jedis jedis = null;
+        if(key!=null&&!key.isEmpty()) {
+            try {
+                jedis = jedisPool.getResource();
+                jedis.set(key,value);
+            } catch (Exception e) {
+                logger.error("Redis set value error: ", e);
+            } finally {
+                if (null!=jedis) {
+                    jedis.close();
+                }
+            }
+        }
+    }
+    public void pipelineOpt(PipelineHandler handler){
+        Jedis jedis = null;
+        try {
+            List datas = handler.getDatas();
+            jedis = jedisPool.getResource();
+            Pipeline pipelined = jedis.pipelined();
+            handler.pipelineDo(pipelined,datas);
+        } catch (Exception e) {
+            logger.error("Redis set value error: ", e);
+        } finally {
+            if (null!=jedis) {
+                try{
+                    jedis.close();
+                }catch (Exception e){
+                    logger.error("close redis error: ", e);
+                }
+            }
+        }
+
+    }
+}
