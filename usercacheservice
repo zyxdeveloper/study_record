@@ -1,0 +1,81 @@
+package com.doublexman.uum.service;
+
+import com.doublexman.utils.redis.PipelineHandler;
+import com.doublexman.utils.redis.RedisManager;
+import com.doublexman.uum.component.UserCacheUtils;
+import com.doublexman.uum.domain.Account;
+import com.doublexman.uum.repository.AccountRepository;
+import com.doublexman.uum.rest.web.dto.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import redis.clients.jedis.Pipeline;
+
+import java.util.List;
+
+@Service
+public class UserCacheService {
+    @Autowired
+    RedisManager redisManager;
+
+    @Autowired
+    UserCacheUtils userCacheUtils;
+
+    @Autowired
+    AccountRepository accountRepository;
+    private Logger logger=LoggerFactory.getLogger(UserCacheService.class);
+
+    /**
+     * 根据用户账号信息更新一个用户的cache信息
+     * @param account
+     */
+    public void refreshUserCache(Account account) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        if (account!=null) {
+            User user = userCacheUtils.assembleUser(account);
+            if (user!=null) {
+                try {
+                    String userJson = objectMapper.writeValueAsString(user);
+                    redisManager.setValue(user.getAccount().getAccountId(), userJson);
+                } catch (JsonProcessingException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 这个蓝笔方法应该很少用
+     */
+    public void refreshAllUserCache() {
+        redisManager.pipelineOpt(new PipelineHandler<Account>() {
+            @Override
+            public List<Account> getDatas() {
+                return accountRepository.findAll();
+            }
+            @Override
+            public void pipelineDo(Pipeline pipelined,List<Account> datas) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                long start = System.currentTimeMillis();
+                for (Account account : datas) {
+                    User user = userCacheUtils.assembleUser(account);
+                    if (user!=null) {
+                        try {
+                            String userJson = objectMapper.writeValueAsString(user);
+                            pipelined.set(account.getAccountId(),userJson);
+                        } catch (JsonProcessingException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+                long end=System.currentTimeMillis();
+                logger.debug("refreshAllUserCache cost time {} ms",end-start);
+            }
+        });
+
+    }
+
+}
