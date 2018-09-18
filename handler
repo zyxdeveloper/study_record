@@ -1,0 +1,10 @@
+package com.doublexman.utils.redis;
+
+import redis.clients.jedis.Pipeline;
+
+import java.util.List;
+
+public abstract class PipelineHandler<T>{
+    public abstract List<T> getDatas();
+    public abstract void  pipelineDo(Pipeline pipelined,List<T> datas);
+}
