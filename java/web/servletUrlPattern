@@ -1,0 +1,20 @@
+一.url-pattern的三种写法
+
+精确匹配。以"/"开头，加上servlet名称。
+Java代码  收藏代码
+/ad  
+ 
+路径匹配。以"/"开头，加上通配符"*"。
+Java代码  收藏代码
+/*  
+ 
+扩展名匹配。以通配符"*"开头，加上扩展名。
+Java代码  收藏代码
+*.action  
+
+二.servlet匹配规则
+
+先精确匹配，再路径匹配。servlet-mapping1：<url-pattern>/ad</url-pattern>，servlet-mapping2：<url-pattern>/*</url-pattern>。当一个请求http://localhost:8080/ad来的时候，servlet-mapping1匹配到，不再用servlet-mapping2匹配。
+路径匹配的时候，先最长路径匹配，再最短路径匹配。servlet-mapping1：<url-pattern>/ad/uplaod.jsp</url-pattern>，servlet-mapping2：<url-pattern>/ad/*</url-pattern>。当一个请求http://localhost:8080/ad/upload.jsp来的时候，servlet-mapping1匹配到，不再用servlet-mapping2匹配。
+至于扩展名匹配，就是单独于精确匹配和匹配的一类了。struts2的扩展名就是.action，所以http://localhost:8080/ad.action会被servlet-mapping：<url-pattern>*.action</url-pattern>匹配到。
+以上都找不到servlet，就用默认的servlet，配置为<url-pattern>/</url-pattern>。
