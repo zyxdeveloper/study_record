@@ -1,0 +1,138 @@
+想对spring框架进行深入的学习一下，看看源代码，先了解下Spring的整体架构以及各模块之间的关系。
+
+
+
+在介绍整体架构之前，我们先来聊聊大家关于Spring，熟悉的模块有哪些，还有哪些不熟悉的模块。
+
+作为优秀的开源项目，spring包括众多的子项目。
+
+    Spring Web Flow：构建在spring MVC的基础上（spring MVC大家应该都很熟悉吧），定义了一种描述工作流的语言，还可以管理会话状态，支持AJAX来构建丰富的
+
+                                   客户端体验，并且提供对JSF的支持。
+
+    Spring Batch：批处理操作。主要用于不需要和用户交互，重复的操作量很大，大容量的批量的数据处理，例如有些定时任务。
+
+    Spring Framework：这个应该也是大家比较熟悉的，是spring的核心。要想真正了解spring，这块一定要吃透。主要包括IOC和AOP两个核心基本功能。
+
+    Spring Security：spring的安全 认证。
+
+    Spirng Data：为spring提供使用非关系数据的能力，如map/reduce分布式存储（MongoDB）。
+
+    Spring Web Services：基于spring的web服务框架，主要侧重于文档驱动的web服务，提供SOAP服务开发，允许通过多种方式创建web服务。
+
+    Spring .NET：在.net环境下使用spring开发。
+
+    下面的一些模块，我就不是很熟悉，也一起列出来。
+
+    Spring AMQP：为spring应用更好的使用基于AMQP（高级消息队列协议）的消息服务而开发的
+
+    Spring for Android：为android终端开发应用提供spring的支持
+
+    Spring Gemfire：用来简化通过 GemFire分布式数据管理平台来部署高可伸缩性的 Spring 应用
+
+    Spring Integration：针对 Java 技术的一个可扩展的、基于文本的开源 RAD 工具。它是用于创建和管理基于Spring 的应用程序的一个强大资源   
+
+    Spring Mobile：基于sring MVC构建，为移动终端的服务器应用开发提供支持，使工作在spring传统的服务器端完成
+
+    Spring ROO：创建Spring工程的小工具，
+
+    Spring Social：spring框架的扩展，帮助spring应用更方便的与各种社交网站交互，如facebook等
+
+
+
+    之前在项目中和平时自己写的练手项目中，有时候用到spring的时候，总是不是很明白要弄哪些jar包，有时候直接拿上次项目的jar原封不动的拿过来，要不就是把所有的
+
+    包都放进去，放在这样肯定不会错，但也知道这样不好。下面就来好好的每个jar包的作用和功能。
+
+   下面介绍spring4的结构图，spring框架是一个分层架构，如下图所示：
+
+    
+
+          上图将spring分为5个部分：core， aop,  data access,   web,  test。图中每个圆角矩形都对应一个jar。所有这些jar的“groupId”都是“org.springframework”，每个jar
+
+          有一个不同的“artifactId”，另外，“instrumentation”有两个jar，还有一个“spring-context-support”图中没有列出，所以spring4的jar包一共是20个。
+
+
+
+　　  下面介绍这5个部分的jar以及依赖关系：
+
+    （1）Core Container：核心容器，下面4个模块jar包在使用spring时必须导入。
+
+        1）Core模块：主要包含Spring框架基本的核心工具类，特别重要
+
+        2）Beans模块：包含访问配置文件、创建和管理bean以及进行Ioc/DI操作相关的所有类
+
+        3）Context模块：构建于Core和Beans模块基础之上，提供了一种类似于JNDI注册器的框架式的对象访问方法
+
+        4）Expression Languaga模块：提供了一个强大的表达式语言用于在运行时查询和操纵对象
+
+      它们的依赖关系：
+
+      
+
+
+
+      （2）Data Access/Integration
+
+        1）JDBC模块：jdbc支持
+
+        2）ORM模块：对象关系映射，集成orm框架，如Hibernate，IBatis
+
+        3）OXM模块：对象XML映射
+
+        4）JMS（Java Message Service）模块：java消息服务
+
+        5）Transaction模块：事务控制
+
+      它们的依赖关系
+
+        
+
+         
+
+    （3）Web：建立在应用程序上下文模块之上，为基于web的应用程序提供了上下文，还简化了处理多部分请求以及将请求参数绑定到域上的工作
+
+        1）spring-web模块：提供了基础的面向web的集成特性，如文件上传
+
+        2）spring-webmvc模块：包含了spring 的mvc实现
+
+        3）spring-websocket：为web应用提供的高效通信工具
+
+        4）spring-web-portlet模块：提供了用于Portlet环境和web-servlet模块的mvc实现
+
+　　它们的依赖关系
+
+        
+
+
+
+   （4）AOP模块：提供了面向切面编程的实现，将逻辑代码分开，降低它们之间的耦合性
+
+       1）spring-aop：面向切面编程
+
+       2）spring-aspects ：Aspects模块提供了对AspectJ（一个面向切面的框架，它扩展了Java语言）的集成支持。
+
+       3）spring-instrument：提供一些类级的工具支持和ClassLoader级的实现，用于服务器
+
+       4）spring-instrument-tomcat：针对tomcat的instrument实现
+
+       5）spring-messaging：用于构建基于消息的应用程序
+
+       它们的依赖关系
+
+       
+
+     （5）Test模块：
+
+       test部分只有一个模块，我将spring-context-support也放在这吧
+
+      1）spring-test：spring测试，提供junit与mock测试功能
+
+      2）spring-context-support：spring额外支持包，比如邮件服务、视图解析等
+
+　　它们的依赖关系
+
+       
+
+     OK，就这么多了。
+
