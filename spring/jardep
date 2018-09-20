@@ -1,0 +1,222 @@
+在用maven搭建web项目的时候，引用大量的jar包，经常会出现jar的版本冲突，这主要是因为不了解各个jar之间的依赖关系导致的，所以整理一些常用的jar之间的依赖关系。
+
+spring的主要模块:
+IOC 
+  core：资源访问，类型转换
+  beans：bean工厂
+  expression：${}获取属性
+  context：核心接口ApplicationContext
+AOP 
+  aop：面向切面编程的实现
+  aspects：对AspectJ的整合
+DAO 
+  jdbc：通过jdbc模板类访问数据库
+  tx：事务的实现
+  orm：与hibernate，mybatis的集成
+  oxm：对象与xml数据之间的相互转换
+  jms：系统之间发送消息，异步通信
+Web 
+  web：与web项目的整合
+  webmvc：子模块springMVC
+Test 
+  test：测试
+  
+  
+jar包依赖：
+
+spring-core---------->commons-logging
+spring-beans--------->spring-core
+spring-expression---->spring-core
+spring-tx------------>spring-beans
+spring-jdbc---------->spring-tx
+spring-aop|---------->spring-core
+          |---------->spring-beans
+          |---------->aoplliance
+spring-aspects------->aspectjweaver
+spring-context|------>spring-beans
+              |------>spring-expression
+              |------>spring-aop
+spring-web----------->spring-context
+spring-webmvc-------->spring-web
+
+
+一）简化版 
+Spring AOP：Spring的面向切面编程，提供AOP（面向切面编程）的实现 
+Spring Aspects：Spring提供的对AspectJ框架的整合 
+Spring Beans：Spring IOC的基础实现，包含访问配置文件、创建和管理bean等。 
+Spring Context：在基础IOC功能上提供扩展服务，此外还提供许多企业级服务的支持，有邮件服务、任务调度、JNDI定位，EJB集成、远程访问、缓存以及多种视图层框架的支持。 
+Spring Context Support：Spring context的扩展支持，用于MVC方面。 
+Spring Core：Spring的核心工具包 
+Spring expression：Spring表达式语言 
+Spring Framework Bom： 
+Spring Instrument：Spring对服务器的代理接口 
+Spring Instrument Tomcat：Spring对tomcat连接池的集成 
+Spring JDBC：对JDBC 的简单封装 
+Spring JMS：为简化jms api的使用而做的简单封装 
+Spring Messaging： 
+Spring orm：整合第三方的orm实现，如hibernate，ibatis，jdo以及spring 的jpa实现 
+Spring oxm：Spring对于object/xml映射的支持，可以让JAVA与XML之间来回切换 
+Spring test：对JUNIT等测试框架的简单封装 
+Spring tx：为JDBC、Hibernate、JDO、JPA等提供的一致的声明式和编程式事务管理。 
+Spring web：包含Web应用开发时，用到Spring框架时所需的核心类，包括自动载入WebApplicationContext特性的类、Struts与JSF集成类、文件上传的支持类、Filter类和大量工具辅助类。 
+Spring webmvc：包含SpringMVC框架相关的所有类。包含国际化、标签、Theme、视图展现的FreeMarker、JasperReports、 Tiles、Velocity、XSLT相关类。当然，如果你的应用使用了独立的MVC框架，则无需这个JAR文件里的任何类。 
+Spring webmvc portlet：Spring MVC的增强 
+Spring websocket：提供 Socket通信， web端的推送功能
+
+（二）详尽版 
+1.org.springframework.aop或spring-aop.jar
+
+这个jar文件包含在应用中使用Spring的AOP特性时所需的类。使用基于AOP的Spring特性，如声明型事务管理（Declarative Transaction Management），也要在应用里包含这个jar包。
+
+外部依赖spring-core.jar，spring-beans.jar，cglib-nodep.jar，aopalliance.jar
+
+附：aopalliance.jar：这个包是AOP联盟的API包，里面包含了针对面向切面的接口。通常Spring等其它具备动态织入功能的框架依赖此包。
+
+cglib-nodep.jar：这个包是一个强大的,高性能,高质量的Code生成类库。它可以在运行期扩展Java类与实现Java接口。 当然这些实际的功能是asm所提供的，asm又是什么？Java字节码操控框架。cglib就是封装了asm，简化了asm的操作，实现了在运行期动态生成新的class。 实际上CGlib为spring aop提供了底层的一种实现;为hibernate使用cglib动态生成VO/PO (接口层对象)。
+
+2.spring-asm.jar
+
+Spring独立的asm程序, Spring2.5.6的时候需要asmJar 包, 3.0开始提供他自己独立的asmJar。
+
+3.spring-beans.jar
+
+这个jar文件是所有应用都要用到的，它包含访问配置文件、创建和管理bean 以及进行Inversion of Control / Dependency Injection（IoC/DI）操作相关的所有类。如果应用只需基本的IoC/DI 支持，引入spring-core.jar 及spring-beans.jar 文件就可以了。 
+外部依赖spring-core，cglib-nodep.jar。
+
+4.spring-core.jar
+
+这个jar 文件包含Spring 框架基本的核心工具类。Spring 其它组件要都要使用到这个包里的类，是其它组件的基本核心，当然你也可以在自己的应用系统中使用这些工具类。 
+外部依赖Commons-Logging， Log4J。
+
+5.spring-aop.jar
+
+这个jar 文件包含在应用中使用Spring 的AOP 特性时所需的类和源码级元数据支持。使用基于AOP 的Spring特性，如声明型事务管理（Declarative Transaction Management），也要在应用里包含这个jar包。
+
+外部依赖spring-core，spring-beans，aopalliance，CGLIB，Commons Attributes。
+6.spring-context.jar
+
+这个jar文件为Spring核心提供了大量扩展。可以找到使用Spring ApplicationContext特性时所需的全部类，JDNI 所需的全部类，instrumentation组件以及校验Validation 方面的相关类。
+
+外部依赖spring-core.jar，spring-beans.jar，spring-aop.jar，commons-collections.jar，aopalliance.jar。
+
+7.spring-dao.jar
+
+这个jar 文件包含Spring DAO、Spring Transaction 进行数据访问的所有类。为了使用声明型事务支持，还需在自己的应用里包含spring-aop.jar。
+
+外部依赖spring-core，spring-aop， spring-context， JTA API。
+
+8.spring-jdbc.jar
+
+这个jar 文件包含对Spring 对JDBC 数据访问进行封装的所有类。 
+外部依赖spring-beans，spring-dao。
+
+9.spring-support.jar
+
+这个jar文件包含支持UI模版（Velocity，FreeMarker，JasperReports），邮件服务，脚本服务(JRuby)，缓存Cache（EHCache），任务计划Scheduling（uartz）方面的类。 
+外部依赖spring-context, spring-jdbc, Velocity, FreeMarker, JasperReports, BSH, Groovy, JRuby, Quartz, EHCache
+
+10.spring-web.jar
+
+这个jar 文件包含Web 应用开发时，用到Spring 框架时所需的核心类，包括自动载入Web Application Context 特性的类、Struts 与JSF 集成类、文件上传的支持类、Filter 类和大量工具辅助类。
+
+外部依赖spring-context, Servlet API, JSP API, JSTL, Commons FileUpload, COS。
+
+11.spring-webmvc.jar
+
+这个jar 文件包含Spring MVC 框架相关的所有类。包括框架的Servlets，Web MVC框架，控制器和视图支持。当然，如果你的应用使用了独立的MVC 框架，则无需这个JAR 文件里的任何类。
+
+外部依赖spring-web, spring-support，Tiles，iText，POI。
+
+12.spring-portlet.jar
+
+spring自己实现的一个类似Spring MVC的框架。包括一个MVC框架和控制器。
+
+外部依赖spring-web， Portlet API，spring-webmvc。
+
+13.spring-struts.jar
+
+Struts框架支持，可以更方便更容易的集成Struts框架。
+
+外部依赖spring-web，Struts。
+
+14.spring-remoting.jar
+
+这个jar 文件包含支持EJB、远程调用Remoting（RMI、Hessian、Burlap、Http Invoker、JAX-RPC）方面的类。
+
+外部依赖spring-aop， (spring-context，spring-web，Hessian，Burlap，JAX-RPC，EJB API)。
+
+15.spring-jmx.jar
+
+这个jar包提供了对JMX 1.0/1.2的支持类。
+
+外部依赖spring-beans，spring-aop， JMX API。
+
+16.spring-jms.jar
+
+这个jar包提供了对JMS 1.0.2/1.1的支持类。
+
+外部依赖spring-beans，spring-dao，JMS API。
+
+17spring-jca.jar
+
+对JCA 1.0的支持。JDO(Java Data Object )是Java对象持久化的新的规范，也是一个用于存取某种数据仓库中的对象的标准化API。
+
+外部依赖spring-beans，spring-dao， JCA API。
+
+18.spring-jdo.jar
+
+对JDO 1.0/2.0的支持。JCA (J2EE 连接器架构，Java Connector Architecture)，可以将有JCA适配器其他语言的系统部署到j2ee应用服务器中
+
+外部依赖spring-jdbc， JDO API， (spring-web)。
+
+19.spring-jpa.jar
+
+对JPA 1.0的支持。
+
+外部依赖spring-jdbc， JPA API， (spring-web)。
+
+20.spring-hibernate2.jar
+
+对Hibernate 2.1的支持，已经不建议使用。
+
+外部依赖spring-jdbc，Hibernate2，(spring-web)。
+
+21.spring-hibernate3.jar
+
+对Hibernate 3.0/3.1/3.2的支持。
+
+外部依赖spring-jdbc，Hibernate3，(spring-web)。
+
+22.spring-toplink.jar
+
+对TopLink框架的支持。
+
+外部依赖spring-jdbc，TopLink。
+
+23.spring-ibatis.jar
+
+对iBATIS SQL Maps的支持。
+
+外部依赖spring-jdbc，iBATIS SQL Maps。
+
+24.spring-mock.jar
+
+这个jar 文件包含Spring 一整套mock 类来辅助应用的测试。Spring 测试套件使用了其中大量mock 类，这样测试就更加简单。模拟HttpServletRequest 和HttpServletResponse 类在Web 应用单元测试是很方便的。并且提供了对JUnit的支持。 
+外部依赖spring-core。
+
+25.spring-aspects.jar
+
+提供对AspectJ的支持，以便可以方便的将面向方面的功能集成进IDE中，比如Eclipse AJDT。 
+外部依赖。
+
+26.spring-agent.jar
+
+Spring的InstrumentationSavingAgent (为InstrumentationLoadTimeWeaver)，一个设备代理包，可以参考JDK1.5的Instrumentation功能获得更多信息。
+
+外部依赖none (for use at JVM startup: “-javaagent:spring-agent.jar”)。
+
+27.spring-tomcat-weaver.jar
+
+扩展Tomcat的ClassLoader，使其可以使用instrumentation（设备）类。
+
+外部依赖none (for deployment into Tomcat’s “server/lib” directory)。
