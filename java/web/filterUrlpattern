@@ -1,0 +1,23 @@
+三. filter匹配规则
+
+顺着web.xml定义的filter顺序匹配，匹配到了就开始filter。
+有几个就匹配几次filter几次。
+Java代码  收藏代码
+<filter>  
+        <filter-name>encodeFilter</filter-name>  
+        <filter-class>com.skylark.common.util.EncodeFilter</filter-class>  
+    </filter>  
+    <filter-mapping>  
+        <filter-name>encodeFilter</filter-name>  
+        <url-pattern>/*</url-pattern>  
+    </filter-mapping>  
+  
+    <filter>  
+        <filter-name>initSessionFilter</filter-name>  
+        <filter-class>com.skylark.service.servlet.InitSessionFilter</filter-class>  
+    </filter>  
+    <filter-mapping>  
+        <filter-name>initSessionFilter</filter-name>  
+        <url-pattern>/*</url-pattern>  
+    </filter-mapping>  
+ 任何请求过来的时候，都会先encode，然后initSession
