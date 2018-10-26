@@ -1,0 +1,111 @@
+oracle with 别名 as (select * from *)
+with  别名 as (select * from *)
+ 
+select * from 别名；
+
+相当于建个临时表，其实就是把一大堆重复用到的SQL语句放在with as 里面，取一个别名，后面的查询就可以用它 
+这样对于大批量的SQL语句起到一个优化的作用，而且清楚明了。是个临时存储,一般是在存储过程里使用的，可以做多个表的连接，结果集的连接查询
+　　例子：
+with t as (select * from emp where depno=10)
+select * from t where empno=xxx
+
+with wd as (select did,arg(salary) 平均工资 from work), em as (select emp.*,w.salary from emp left join work w on emp.eid = w.eid) select * from wd,em where wd.did =em.did and wd.平均工资>em.salary;
+
+
+with TT as   (select  to_char(ar.archtime,'MM') as month,--ar.archtime,
+                     sum(decode(ar.indexname,'9bf85d01-7c16-43c8-893a-8d23de2aaac2', ar.num,null)) as pingtai,
+                     sum(decode(ar.indexname,'90bebfc4-dea0-43c2-8967-6fe49bd573cb', ar.num,null)) as diaotao,
+                     sum(decode(ar.indexname,'ab1859d0-f1ad-4a5d-af58-06ffda14e658', ar.num,null)) as tigong,
+                      sum(decode(ar.indexname,'97863dc9-3480-447a-bdaf-cf73d34d1bfd', ar.num,null)) as tushu
+                    from MC_ARCHIVESDATA ar 
+                      where　to_char(ar.archtime,'yyyy') = '{Year}'
+                    group by ar.archtime),
+               AA as (select lpad(level,2,0) as omonth from dual connect  by level<13)
+  select AA.omonth,TT.pingtai,TT.diaotao,TT.tigong,TT.tushu from TT right join  AA on TT.month = AA.omonth order by AA.omonth
+  
+  
+  
+  --从具体的某月获取12个月（带年月）
+SELECT TO_CHAR( add_months(to_date('2012', 'yyyy'), ROWNUM-1),  'YYYY-MM') as Monthly  
+                                        FROM DUAL  
+                                        CONNECT BY ROWNUM <= (select months_between(to_date('2013', 'yyyy'), to_date('2012', 'yyyy')) from dual)
+--从1月起获取之后的12个月
+select '2013-'||lpad(level,2,0) as Monthly from dual connect  by level<13
+
+
+--修改字段名：
+alter table <table_name> rename column <column_old> to <column_new>;
+--修改长度：
+alter table <table_name> modify <column> <datatype>;
+
+ --以下操作在 Oracle 10.2.0.1.0 中通过。
+ 
+/*修改原字段名*/
+ ALTER TABLE 表名 RENAME COLUMN 字段名 TO 字段名1;
+ /*添加一个和原字段同名的字段*/
+ ALTER TABLE 表名 ADD 字段名  VARCHAR2(30);
+ /*
+ 将原来的数据更新到新字段中
+ 这是要注意，一定要显示进行数据类型转换（不同于MSSQL）
+ */
+ UPDATE 表名 SET 字段名 = CAST(字段名1 AS VARCHAR2(30));
+ /*删除原来的备份字段*/
+ ALTER TABLE 表名 DROP COLUMN 字段名1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+create table test (a varchar2(10),b varchar2(10));  
+ 
+INSERT INTO TEST (A, B) VALUES ('1', 'A');  
+INSERT INTO TEST (A, B) VALUES ('1', 'B');  
+INSERT INTO TEST (A, B) VALUES ('2', 'X');  
+INSERT INTO TEST (A, B) VALUES ('2', 'Y');  
+
+SELECT A, B FROM TEST  ;
+
+SELECT A, LTRIM(MAX(SYS_CONNECT_BY_PATH(B, ' ')), ',') B
+  FROM (SELECT B, A, ROW_NUMBER() OVER(PARTITION BY A ORDER BY B DESC) RN
+          FROM TEST)
+ START WITH RN = 1
+CONNECT BY RN - 1 = PRIOR RN
+       AND A = PRIOR A
+ GROUP BY A;
+ 
+ /*
+1.分析先找出有多少个‘,’逗号:length(str) - length(regexp_replace(str, ',', '')) + 1 ;
+2.再根据regexp_substr()函数进行查找逗号的位置 ;
+ regexp_substr(str, '[^,]+', 1, level, 'i') as str ，这里的level代表第几个逗号(‘,’)
+
+3.function REGEXP_SUBSTR(__srcstr, __pattern, __position, __occurrence, __modifier) ;
+           参数的含义：
+           __srcstr     ：需要进行正则处理的字符串
+           __pattern    ：进行匹配的正则表达式
+           __position   ：起始位置，从第几个字符开始正则表达式匹配（默认为1）
+           __occurrence ：标识第几个匹配组，默认为1
+           __modifier   ：模式（'i'不区分大小写进行检索；'c'区分大小写进行检索。默认为'c'。）
+*/
+
+with temp as
+ (select 'A,B,C,D,E,F,G' str from dual)
+select regexp_substr(str, '[^,]+', 1, level, 'i') as str
+  from temp
+connect by level <= length(str) - length(regexp_replace(str, ',', '')) + 1;
+A,B,C,D,E,F,G' 
+A
+B
+C
+D
+E
+F
