@@ -1,0 +1,41 @@
+Oracle分页查询是经常用到的sql，有时客户会反映查询数据不变的情况，这是由于Oracle的排序机理造成的不稳定性
+
+
+我们经常使用的Oracle分页查询时（mysql有自身的分页语法，自行百度），一般都是用的是rownum这个伪列进行排序操作。 
+Oracle的分页排序的sql语句，写法如下：
+
+select * from
+   (select t.*,rownum rownum_ from table_name t order by t.id) row_
+where row.rownum_ between 1 and 10
+
+
+执行之后会发现，sql会先生成rownum后执行order by子句，因而排序后结果不对，查询相关文章后发现，需要多嵌套一层select就能解决该问题，写法如下：
+
+select * from
+   (select row_.*,rownum rownum_ from
+      (select * from table_name t order by t.id desc) row_
+   ) a
+where a.rownum_ between 1 and 10
+
+
+但是基于效率的考虑，这种方法一般不用，我们使用伪列进行分页：
+
+select *
+  from (select row_.*, rownum rownum_
+          from (select * from table_name) row_
+         where rownum <= 10)
+ where rownum_ > 0
+
+
+其中内层和外层的rownum仔细读下不难，但是内层结果集如果加入排序字段，比如：CREATETIME（创建日期），会发现筛选出来的结果集并不稳定，这个跟Oracle的排序机理有关系。 
+Oracle的分页查询是没有进行任何排序操作的，Oracle是顺序的从数据块中读取符合条件的数据返回到客户端。而Oracle的排序算法不具有稳定性，也就是说，对于键值相等的数据，这种算法完成排序后，不保证这些键值相等的数据保持排序前的顺序。 
+不知道oracle底层对这样的排序取结果集是怎么取的（有懂的大佬，可以交流交流，抱拳），但是如果给排序字段加入一个唯一的列，那么问题就迎刃而解咯。
+
+
+在进行查询时，经常会用到排序的函数，比如：需要按照时间排序，按照时间排序后还需要按照客户的卡号排序等等，如果我们在进行批量插入记录或者根据不唯一的字段进行排序的时候，Oracle的排序会出现不稳定的情况，如上所述，需要给sql加入排序唯一的排序字段。我们知道，排序时当有多个字段时，从左到右的排序方式进行排序，排在前面的优先级高，写法如下：
+
+select *
+  from (select row_.*, rownum rownum_
+          from (select * from table_name order by createtime desc, id asc) row_
+         where rownum <= 10)
+ where rownum_ > 0
