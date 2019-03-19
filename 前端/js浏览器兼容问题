@@ -1,0 +1,1 @@
+ie8 Array 不兼容indexOf 自定义indexOf 会在for...in 语句中遍历出来
