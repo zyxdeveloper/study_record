@@ -1,0 +1,36 @@
+Uncaught Error: Script error for "popper.js", needed by: bootstrap - require.js
+
+Uncaught Error: Script error for "popper.js", needed by: bootstrap
+https://requirejs.org/docs/errors.html#scripterror
+    at makeError (require.js:168)
+    at HTMLScriptElement.onScriptError (require.js:1738)
+　　
+
+使用require.js 模块化开发引入bootstrap 4.1.1 时会报错，如上，在网上找到一个解决办法，在配置require.js 时添加map参数，最终解决方案如下：
+
+
+require.config({
+  baseUrl: '/vendors',
+  paths: {
+    'jquery':                 'jquery/dist/jquery.min',
+    'bootstrap':              'bootstrap/dist/js/bootstrap',
+    'popper':                 'popper.js/dist/umd/popper.min',
+    ...
+  },
+  shim: {
+    'bootstrap': ['jquery']
+  },
+  map: {
+    '*': {
+      'popper.js': 'popper'
+    }
+  }
+});
+　　
+
+核心解决方案是：
+
+在require的配置中 map 里加配置 'popper.js': 'popper'。
+这是因为在Bootstrap里定义的是require('popper.js'), 而不是require标准的require('popper'), 所以要在map里做一个转换以让require.js识别。
+
+以后遇到同类情况也可以用些方案解决。
